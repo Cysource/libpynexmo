@@ -1,26 +1,23 @@
 from unittest import TestCase
+from nexmomessage.nexmo import NexmoVerificationRequest, NexmoVerificationCheck
 
-from nexmomessage import NexmoMessage
 
-
-class VerificationTest(TestCase):
-    def test_it_should_build_a_verification_request_message(self):
-        nexmo_settings = {
-            'key': 'key12345',
-            'secret': 'secret12'
-        }
-
-        brand = 'TESTBRAND'
-        msg = {
-            'reqtype': 'json',
-            'api_key': nexmo_settings['key'],
-            'api_secret': nexmo_settings['secret'],
-            'from': brand,
-            'to': 31612345678,
+class VerificationMessageTest(TestCase):
+    def setUp(self):
+        self.test_key = 'key12345'
+        self.test_secret = 'secret12'
+        self.msg = {
+            'api_key': self.test_key,
+            'api_secret': self.test_secret,
             'text': 'Message Body',
-            'type': 'verification-message'
         }
-        sms = NexmoMessage(msg)
+
+    def test_it_should_build_a_verification_request_message(self):
+        test_brand = 'TESTBRAND'
+        self.msg['from'] = test_brand
+        test_number = 31612345678
+        self.msg['to'] = test_number
+        sms = NexmoVerificationRequest(self.msg)
 
         request = sms.build_request()
 
@@ -30,37 +27,23 @@ class VerificationTest(TestCase):
             '&api_secret={api_secret}'
             '&number={number}'
             '&brand={brand}'.format(
-                api_key=nexmo_settings['key'],
-                api_secret=nexmo_settings['secret'],
-                number='31612345678',
-                brand=brand
+                api_key=self.test_key,
+                api_secret=self.test_secret,
+                number=test_number,
+                brand=test_brand
             )
         )
 
         self.assertEqual(expected_request, request)
 
     def test_it_should_build_a_verification_check_message(self):
-        nexmo_settings = {
-            'key': 'key12345',
-            'secret': 'secret12'
-        }
 
         request_id = '8g88g88eg8g8gg9g90'
         code = 123456
+        self.msg['request_id'] = request_id
+        self.msg['code'] = code
 
-        brand = 'TESTBRAND'
-        msg = {
-            'reqtype': 'json',
-            'api_key': nexmo_settings['key'],
-            'api_secret': nexmo_settings['secret'],
-            'from': brand,
-            'to': 31612345678,
-            'text': 'Message Body',
-            'type': 'verification-check',
-            'request_id': request_id,
-            'code': code
-        }
-        sms = NexmoMessage(msg)
+        sms = NexmoVerificationCheck(self.msg)
 
         request = sms.build_request()
 
@@ -70,11 +53,15 @@ class VerificationTest(TestCase):
             '&api_secret={api_secret}'
             '&request_id={request_id}'
             '&code={code}'.format(
-                api_key=nexmo_settings['key'],
-                api_secret=nexmo_settings['secret'],
+                api_key=self.test_key,
+                api_secret=self.test_secret,
                 request_id=request_id,
                 code=code
             )
         )
 
         self.assertEqual(expected_request, request)
+
+    # def test_it_should_send_a_verification_message(self):
+    #     sms = NexmoVerification(self.msg)
+

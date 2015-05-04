@@ -45,6 +45,7 @@ APIURL = "https://api.nexmo.com"
 
 class NexmoMessage(object):
     def __init__(self, details):
+        self.request = ''
         self.sms = details
         self.sms.setdefault('type', 'text')
         self.sms.setdefault('server', RESTURL)
@@ -165,34 +166,6 @@ class NexmoMessage(object):
                 self.request = "%s/account/numbers/%s/%s" \
                     % (self.sms['server'], self.sms['api_key'],
                        self.sms['api_secret'])
-            elif self.sms['type'] == 'verification-message':
-                self.request = (
-                    '{server}/verify/json'
-                    '?api_key={api_key}'
-                    '&api_secret={api_secret}'
-                    '&number={number}'
-                    '&brand={brand}'
-                    .format(
-                        server=APIURL,
-                        api_key=self.sms['api_key'],
-                        api_secret=self.sms['api_secret'],
-                        number=self.sms['to'],
-                        brand=self.sms['from']
-                    ))
-            elif self.sms['type'] == 'verification-check':
-                self.request = (
-                    '{server}/verify/json'
-                    '?api_key={api_key}'
-                    '&api_secret={api_secret}'
-                    '&request_id={request_id}'
-                    '&code={code}'
-                        .format(
-                        server=APIURL,
-                        api_key=self.sms['api_key'],
-                        api_secret=self.sms['api_secret'],
-                        request_id=self.sms['request_id'],
-                        code=self.sms['code']
-                    ))
             return self.request
         else:
             # standard requests
@@ -230,6 +203,45 @@ class NexmoMessage(object):
 
     def send_request_xml(self, request):
         return "XML request not implemented yet."
+
+
+class NexmoVerificationRequest(NexmoMessage):
+    def build_request(self):
+        self.request = (
+            '{server}/verify/json'
+            '?api_key={api_key}'
+            '&api_secret={api_secret}'
+            '&number={number}'
+            '&brand={brand}'
+            .format(
+                server=APIURL,
+                api_key=self.sms['api_key'],
+                api_secret=self.sms['api_secret'],
+                number=self.sms['to'],
+                brand=self.sms['from']
+            ))
+
+        return self.request
+
+
+class NexmoVerificationCheck(NexmoMessage):
+    def build_request(self):
+        self.request = (
+            '{server}/verify/json'
+            '?api_key={api_key}'
+            '&api_secret={api_secret}'
+            '&request_id={request_id}'
+            '&code={code}'
+            .format(
+                server=APIURL,
+                api_key=self.sms['api_key'],
+                api_secret=self.sms['api_secret'],
+                request_id=self.sms['request_id'],
+                code=self.sms['code']
+            ))
+
+        return self.request
+
 
 class NexmoCall(object):
     def __init__(self, details):
